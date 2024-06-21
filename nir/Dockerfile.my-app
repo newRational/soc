@@ -1,0 +1,21 @@
+FROM golang:latest AS builder
+
+WORKDIR /project
+
+RUN export GO111MODULE=on
+
+COPY ./go.mod ./go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 go build -v -o ./my-app ./cmd/app
+
+FROM alpine:latest AS runner
+
+COPY --from=builder /project .
+
+EXPOSE 8080 5432 8002 9091 9092 9093
+
+CMD ["./my-app"]
